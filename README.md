@@ -32,65 +32,6 @@ Built as the application layer of the **Automated E-Commerce Deployment Platform
                         └────────────────────────────┘
 ```
 
-## Kubernetes Architecture
-
-```
-                      ┌──────────────────┐
-                      │   Client/User    │
-                      └────────┬─────────┘
-                               │ (HTTP: Port 80/443)
-                      ┌────────▼─────────┐
-                      │  Nginx Ingress   │  ← Ingress Controller
-                      └────────┬─────────┘
-                               │
-       ┌──────────┬────────────┼────────────┬──────────┐
-       │          │            │            │          │
-  ┌────▼────┐┌────▼────┐  ┌────▼────┐  ┌────▼────┐┌────▼────┐
-  │frontend ││  user-  │  │product- │  │  cart-  ││ order-  │
-  │  :3000  ││ service │  │ service │  │ service ││ service │
-  └─────────┘│  :3001  │  │  :3002  │  │  :3003  ││  :3004  │
-             └────┬────┘  └────┬────┘  └────┬────┘└────┬────┘
-                  │            │            │          │
-                  │            │            │          │ (API Calls)
-                  │            │            │          ├────────► [cart-serv]
-                  │            │            │          ├────────► [prod-serv]
-                  │            │            │          └────────► [pay-serv]
-                  │            │            │                       │
-                  │            │            │                       ▼
-                  │            │            │                  ┌─────────┐
-                  │            │            │                  │ payment-│
-                  │            │            │                  │ service │
-                  │            │            │                  │  :3005  │
-                  │            │            │                  └─────────┘
-                  ▼            ▼            ▼
-            ┌───────────┐             ┌───────────┐
-            │ postgres  │             │   redis   │  ← Headless Services
-            │  :5432    │             │  :6379    │
-            └─────┬─────┘             └─────┬─────┘
-                  │                         │
-            ┌─────▼─────┐             ┌─────▼─────┐
-            │StatefulSet│             │StatefulSet│  ← Pod instances
-            │postgres-0 │             │  redis-0  │
-            └─────┬─────┘             └─────┬─────┘
-                  │                         │
-            ┌─────▼─────┐             ┌─────▼─────┐
-            │ PVC (1Gi) │             │ PVC (1Gi) │  ← Persistent storage
-            └───────────┘             └───────────┘
-```
-
-### Kubernetes Component Mapping
-
-| Component Name | K8s Resource Type | Ports (Service / Pod) | Storage Volume (PVC) | Config/Secret Mounted | Description |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **ecommerce-ingress** | Ingress | `80` (External) -> internal Services | None | None | Nginx routing rules mapping endpoints to correct services. |
-| **frontend** | Deployment + Service | `3000` / `3000` | None | None | Next.js stateless frontend application pod. |
-| **user-service** | Deployment + Service | `3001` / `3001` | None | `ecommerce-config`<br>`ecommerce-secrets` | Stateless user authentication & profile backend. |
-| **product-service** | Deployment + Service | `3002` / `3002` | None | `ecommerce-config`<br>`ecommerce-secrets` | Stateless catalog & inventory management backend. |
-| **cart-service** | Deployment + Service | `3003` / `3003` | None | `ecommerce-config` | Stateless service caching user checkout baskets. |
-| **order-service** | Deployment + Service | `3004` / `3004` | None | `ecommerce-config`<br>`ecommerce-secrets` | Stateless order transaction management backend. |
-| **payment-service** | Deployment + Service | `3005` / `3005` | None | None | Stateless payment validation backend. |
-| **postgres** | StatefulSet + Headless SVC | `5432` / `5432` | `postgres-data` (1Gi) | `ecommerce-config`<br>`ecommerce-secrets`<br>`postgres-init-script` | Stateful database holding tables for users, products, and orders. |
-| **redis** | StatefulSet + Headless SVC | `6379` / `6379` | `redis-data` (1Gi) | `ecommerce-config` | Stateful database cache holding active session cart data. |
 
 ## Services
 

@@ -1,0 +1,24 @@
+{
+  "name": "ecommerce-platform",
+  "version": "1.0.0",
+  "description": "E-Commerce Microservices Platform — local dev runner",
+  "scripts": {
+    "install:all": "npm install --prefix services/user-service && npm install --prefix services/cart-service && npm install --prefix services/order-service",
+    "start": "concurrently --kill-others-on-fail --names \"USER,CART,ORDER,PRODUCT,PAYMENT\" --prefix-colors \"cyan,yellow,green,magenta,blue\" \"npm run start:user\" \"npm run start:cart\" \"npm run start:order\" \"npm run start:product\" \"npm run start:payment\"",
+    "start:user": "npm start --prefix services/user-service",
+    "start:cart": "npm start --prefix services/cart-service",
+    "start:order": "npm start --prefix services/order-service",
+    "start:product": "cd services\\product-service && python -m uvicorn app.main:app --host 0.0.0.0 --port 3002 --reload",
+    "start:payment": "cd services\\payment-service && python -m uvicorn app.main:app --host 0.0.0.0 --port 3005 --reload",
+    "dev": "concurrently --kill-others-on-fail --names \"USER,CART,ORDER\" --prefix-colors \"cyan,yellow,green\" \"npm run dev:user\" \"npm run dev:cart\" \"npm run dev:order\"",
+    "dev:user": "npm run dev --prefix services/user-service",
+    "dev:cart": "npm run dev --prefix services/cart-service",
+    "dev:order": "npm run dev --prefix services/order-service",
+    "db:up": "docker-compose -f docker-compose.dev.yml up -d",
+    "db:down": "docker-compose -f docker-compose.dev.yml down",
+    "db:logs": "docker-compose -f docker-compose.dev.yml logs -f"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
