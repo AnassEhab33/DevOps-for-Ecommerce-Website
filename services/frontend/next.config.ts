@@ -10,8 +10,8 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [
       // User / Auth → port 3001
-      { source: "/api/auth/:path*",       destination: "http://host.docker.internal:3001/api/auth/:path*" },
-      { source: "/api/users/:path*",      destination: "http://host.docker.internal:3001/api/users/:path*" },
+      { source: "/api/auth/:path*",       destination: "http://user-service:3001/api/auth/:path*" },
+      { source: "/api/users/:path*",      destination: "http://user-service:3001/api/users/:path*" },
       // Product / Categories → port 3002
       { source: "/api/products/:path*",   destination: "http://product-service:3002/api/products/:path*" },
       { source: "/api/categories/:path*", destination: "http://product-service:3002/api/categories/:path*" },
